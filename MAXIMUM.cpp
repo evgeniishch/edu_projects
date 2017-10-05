@@ -21,21 +21,28 @@ class CHeap{
 public:
 
     CHeap(long long k){
+
         currentSize = 0;
         heapSize = k;
         heapArray = new Tuple[heapSize];
         indexArray = new long long[heapSize];
-        first = 0;
-//        indexOfLast = 0;
+        first = -1;
+
     }
 
     int addNewAndDeleteOld(int element) {
 
         long long i, parent; //индекс  нового элемента и родителя в массиве heapArray
 
-        if (currentSize <= heapSize) {
+
+        first = (first+1) % heapSize;
+
+//        i = indexArray[first]; // возьмем из массива (индексов элементов в heapArray) индекс первого элемента
+
+        if (currentSize < heapSize) {
 
             i = currentSize; // добавлям в конец если элементов меньше размера окна
+            indexArray[first] = currentSize; //!!!
 
         } else {
 
@@ -43,7 +50,9 @@ public:
 
         }
 
-        //добавим элемент в кучу / заменим им тот, который раньше был first
+
+
+        //добавим элемент в кучу ИЛИ заменим им тот, который раньше был first
         heapArray[i].element = element;
         heapArray[i].indexInIndexArray = first;
 
@@ -52,7 +61,7 @@ public:
         while(parent >= 0 && i > 0)  {
             if(heapArray[i].element > heapArray[parent].element) {
 
-                //сначала поменям в IndexArray
+                //сначала поменям индексы элементов в IndexArray
                 long long tempIndex = indexArray[heapArray[i].indexInIndexArray];
                 indexArray[heapArray[i].indexInIndexArray] = indexArray[heapArray[parent].indexInIndexArray];
                 indexArray[heapArray[parent].indexInIndexArray] = tempIndex;
@@ -69,14 +78,14 @@ public:
 
 
         indexArray[first] = i;  //запомнили для элемента его номер в куче в массив IndexArray
-        first = (first + 1) % heapSize;
+//        first = (first + 1) % heapSize;
 
         //когда коретка полностью заполнится нам уже все равно
         if(currentSize < heapSize){
             currentSize++;
         }
 
-        heapify(i); //упорядочим кучу
+        heapify(0); //упорядочим кучу
 
     }
 
@@ -126,8 +135,33 @@ public:
         }
 
     }
+    void outHeap() {
+        int i = 0;
+        int k = 1;
+        while(i < currentSize) {
+            while((i < k) && (i < currentSize)) {
+                cout << heapArray[i].element << " ";
+                i++;
+            }
+            cout << endl;
+            k = k * 2 + 1;
+        }
+        cout << '\n';
+    }
 
-private:
+    void printHeapArray(){
+        for (int i = 0; i < heapSize ; ++i) {
+            cout<<heapArray[i].element<<" ";
+        }
+    }
+
+    void printIndexArray(){
+        for (int i = 0; i < heapSize ; ++i) {
+            cout<<indexArray[i]<<" ";
+        }
+    }
+
+//private:
     Tuple * heapArray;
 
     long long * indexArray;
@@ -158,11 +192,17 @@ int main (){
     for (long long j = 0; j < k ; ++j) {
         heap.addNewAndDeleteOld(arr[j]);
     }
-    cout << heap.getMax() << " ";
+
+    heap.outHeap();cout<<endl;
+    cout<<"first (индекс в массиве IndexArray: "<<heap.first<<endl;
+    cout<<"heapArray: "; heap.printHeapArray(); cout<<endl;
+    cout<<"indexArray: "; heap.printIndexArray(); cout<< endl<<endl;
+
 
     for (long long j = k; j < n ; ++j) {
+
         heap.addNewAndDeleteOld(arr[j]);
-        cout << heap.getMax()<<" ";
+
     }
 
     return 0;
