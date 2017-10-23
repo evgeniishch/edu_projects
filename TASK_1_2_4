@@ -1,0 +1,106 @@
+/*
+ ЗАДАЧА 2_4
+ На числовой прямой окрасили N отрезков. Известны координаты левого и правого концов каждого отрезка (Li и Ri).
+ Найти сумму длин частей числовой прямой, окрашенных ровно в один слой.
+*/
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+struct Point {
+    int x;
+    bool isLeftEnd;
+
+    Point () {}
+    Point (int i, bool b) {
+        x = i;
+        isLeftEnd = b;
+    }
+};
+
+class Solver {
+
+public:
+    int findOneLayerCovered (vector <Point> &points, int size);
+
+private:
+    void heapify (vector <Point> &points, int n, int i);
+    void heapSort (vector<Point> &points, int n);
+
+};
+
+void Solver :: heapify (vector <Point> &points, int n, int i) {
+    int largest = i;
+    int left = 2*i + 1;
+    int right = 2*i + 2;
+
+    if (left < n && points[left].x > points[largest].x) {
+        largest = left;
+    }
+
+    if (right < n && points[right].x > points[largest].x) {
+        largest = right;
+    }
+
+    if (largest != i) {
+        swap(points[i], points[largest]);
+        heapify(points, n, largest);
+    }
+}
+
+void Solver :: heapSort (vector<Point> &points, int n) {
+    for (int i = n / 2 - 1; i >= 0; --i) {
+        heapify(points, n, i);
+    }
+
+    for (int i = n - 1; i >= 0; --i) {
+        swap(points[0], points[i]);
+        heapify(points, i, 0);
+    }
+}
+
+int Solver :: findOneLayerCovered (vector <Point> &points, int size) {
+
+    heapSort(points, size);
+
+    int result = 0;
+    Point prev = points[0];
+    int openSegments = 1;
+
+    for (int i = 1; i < size; ++i) {
+        if (openSegments == 1) {
+            result += points[i].x - prev.x;
+        }
+        if (points[i].isLeftEnd) {
+            ++openSegments;
+        } else {
+            --openSegments;
+        }
+        prev = points[i];
+    }
+
+    return result;
+}
+
+int main() {
+
+    long long n = 0;
+    cin >> n;
+
+    vector <Point> arr (2 * n);
+
+    int x;
+
+    for (int i = 0; i < 2*n; i++) {
+        cin >> x;
+        bool isLeftEnd = (i % 2 == 0);
+        arr[i] = Point(x, isLeftEnd);
+    }
+    Solver solver;
+
+    cout<<solver.findOneLayerCovered(arr, 2 * n);
+
+    return 0;
+}
