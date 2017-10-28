@@ -1,0 +1,113 @@
+/*
+ ЗАДАЧА 5_1
+ Дан массив строк. Количество строк не больше 105.
+ Отсортировать массив методом поразрядной сортировки MSD по символам.
+ Размер алфавита - 256 символов. Последний символ строки = ‘\0’.
+*/
+
+#include <iostream>
+#include <vector>
+
+#define ASIZE 256
+
+using namespace std;
+
+class Solver {
+
+public:
+    void solve ();
+
+private:
+    long long n = 0;
+    long long maxLength = -1;
+    vector <string> strings;
+
+    void countingCharSort (vector <string> &arr, long long n, long long move, vector <long long> &counts, long long currentSymbolNumber);
+    void MSDSort (vector <string> &strings, long long n, long long move, long long currentSymbolNumber, long long maxLength);
+    void countingCharSort2(vector <string> &arr, long long n, long long move, vector <long long> &counts, long long currentSymbolNumber);
+};
+
+void Solver :: countingCharSort (vector <string> &arr, long long n, long long move, vector <long long> &counts, long long currentSymbolNumber) {
+
+    vector <string> output(n);
+
+    for (int k = 0; k < ASIZE; ++k) {
+        counts[k] = 0;
+    }
+
+    for (long long i = 0; i < n; ++i) {
+        ++counts[arr[i + move][currentSymbolNumber]];
+    }
+
+    for (long long j = 1; j < ASIZE; ++j) { // <=
+        counts[j] += counts[j - 1];
+    }
+
+    for (long long i = 0; i < n; ++i) {
+        output [counts[arr[i + move][currentSymbolNumber]] - 1] = arr[i + move];
+        --counts[arr[i + move][currentSymbolNumber]];
+    }
+
+    for (long long i = 0; i < n; ++i) {
+        arr[i + move] = output[i];
+    }
+}
+
+void Solver :: MSDSort (vector <string> &strings, long long n, long long move, long long currentSymbolNumber, long long maxLength) {
+
+    vector <long long> counts (ASIZE + 1);
+
+    counts[ASIZE] = n;
+
+    countingCharSort (strings, n, move, counts, currentSymbolNumber);
+
+// debug
+//for (int j = 0; j < n ; ++j) {
+//    cout << strings[j + move] << " ";
+// } cout << endl;
+
+    if (currentSymbolNumber + 1 < maxLength) { // проблема здесь?!
+        for (long long i = 0; i < ASIZE; ++i) {
+            long long size = counts[i + 1] - counts[i];
+            if (size > 1){
+                MSDSort(strings, size, counts[i] + move, currentSymbolNumber + 1, maxLength);
+            }
+        }
+    }
+}
+
+void Solver :: solve () {
+
+    string input;
+
+    while (true) {
+        getline(cin,input);
+
+        if (input.empty()){
+            break;
+        }
+
+        strings.push_back(input);
+
+        if (maxLength < (long long)input.length()) {
+            maxLength = (long long)input.length();
+        }
+        n++;
+    }
+
+    MSDSort(strings, n, 0, 0, maxLength);
+
+//     cout << endl << "Answer:" <<endl;
+    for (long long j = 0; j < n; ++j) {
+        cout << strings[j] << endl;
+    }
+
+}
+
+int main () {
+
+    Solver solver;
+    solver.solve();
+
+    return 0;
+}
