@@ -1,3 +1,12 @@
+/*
+ 3_2
+ Дано число N и N строк. Каждая строка содержащит команду добавления или удаления натуральных чисел,
+ а также запрос на получение k-ой порядковой статистики. Команда добавления числа A задается положительным числом A,
+ команда удаления числа A задается отрицательным числом “-A”.
+ Запрос на получение k-ой порядковой статистики задается числом k.
+ Требуемая скорость выполнения запроса - O(log n).
+ */
+
 #include <iostream>
 
 using namespace std;
@@ -8,13 +17,13 @@ struct Node {
     int height;
     Node * left;
     Node * right;
-
-    Node () = default;
+    
+    
     ~Node () {
         delete left;
         delete right;
     }
-
+    
     Node (int k) {
         key = k;
         size  = 1;
@@ -25,51 +34,51 @@ struct Node {
 };
 
 class AVLTree {
-
+    
 public:
-
+    
     AVLTree () = default;
-
+    
     ~ AVLTree () {
         delete root;
     };
-
+    
     void insert (int value) {
         root = insert (root, value);
     }
-
+    
     void remove (int value) {
-        remove (root, value);
+        root = remove (root, value);
     }
-
+    
     int findKStat (int k);
-
+    
 private:
-
+    
     int bfactor (Node * p);
-
+    
     int height (Node * p) {
         return p != nullptr ? p -> height : 0;
     }
-
+    
     int size (Node * p) {
         return p != nullptr ? p -> size : 0;
     }
-
+    
     void fixHeight (Node * p);
     void fixSize (Node * p);
-
+    
     Node * insert (Node * p, int k);
     Node * rotateRight (Node * p);
     Node * rotateLeft (Node * q);
     Node * balance (Node * p);
     Node * removeMin (Node * p);
     Node * remove (Node * p, int k);
-
+    
     Node * findMin (Node * p) {
         return p -> left == nullptr ? p : findMin(p -> left);
     }
-
+    
     Node * root = nullptr;
 };
 
@@ -78,15 +87,17 @@ int AVLTree :: bfactor (Node * p) {
     if (p == nullptr){
         return 0;
     }
-
+    
     return height (p -> right) -  height (p -> left);
 }
 
 void AVLTree :: fixHeight (Node * p) {
     int hl = height (p -> left);
     int hr = height (p -> right);
-    p -> height = (hl > hr ? hl : hr) + 1;
+    
+    p -> height = hl > hr ? hl + 1 : hr + 1;
 }
+
 void AVLTree :: fixSize (Node * node) {
     int sl = size (node -> left);
     int sr = size (node -> right);
@@ -98,12 +109,12 @@ Node * AVLTree :: rotateRight (Node * p) {
     Node * q = p -> left;
     p -> left = q -> right;
     q -> right = p;
-
+    
     fixHeight(p);
     fixSize(p);
     fixHeight(q);
     fixSize(q);
-
+    
     return q;
 }
 
@@ -112,12 +123,12 @@ Node * AVLTree :: rotateLeft (Node * q) {
     Node * p = q -> right;
     q -> right = p -> left;
     p -> left = q;
-
+    
     fixHeight(q);
     fixSize(q);
     fixHeight(p);
     fixSize(p);
-
+    
     return p;
 }
 
@@ -125,7 +136,7 @@ Node * AVLTree :: rotateLeft (Node * q) {
 Node * AVLTree :: balance (Node * p) {
     fixHeight(p);
     fixSize(p);
-
+    
     if (bfactor(p) == 2) {
         if (bfactor (p -> right) < 0) {
             p -> right = rotateRight (p -> right);
@@ -138,7 +149,7 @@ Node * AVLTree :: balance (Node * p) {
         }
         return rotateRight(p);
     }
-
+    
     return p; // балансировка не нужна
 }
 
@@ -146,13 +157,14 @@ Node * AVLTree :: balance (Node * p) {
 Node * AVLTree :: insert (Node * p, int k) {
     if (p == nullptr) {
         return new Node(k);
-
-    } else if (k < p -> key) {
+        
+    }
+    if (k < p -> key) {
         p -> left = insert (p -> left, k);
     } else {
         p -> right = insert (p -> right, k);
     }
-
+    
     return balance(p);
 }
 
@@ -165,7 +177,7 @@ Node * AVLTree :: removeMin (Node * p) {
         return p -> right;
     }
     p -> left = removeMin (p -> left);
-
+    
     return balance(p);
 }
 
@@ -174,7 +186,7 @@ Node * AVLTree :: remove (Node * p, int k) {
     if (p == nullptr) {
         return nullptr;
     }
-
+    
     if (k < p -> key) {
         p -> left = remove (p -> left, k);
     } else if (k > p -> key) {
@@ -182,12 +194,12 @@ Node * AVLTree :: remove (Node * p, int k) {
     } else { //  k == p->key
         if (p -> left == nullptr || p -> right == nullptr) {
             Node * temp = p -> left != nullptr ? p -> left : p -> right;
-
+            
             if (temp == nullptr) {
                 temp = p;
                 p = nullptr;
             } else {
-                 p = temp;
+                *p = *temp;
             }
             delete temp;
         } else {
@@ -196,7 +208,11 @@ Node * AVLTree :: remove (Node * p, int k) {
             p -> right = remove (p -> right, temp -> key);
         }
     }
-
+    
+    if (p == nullptr) {
+        return p;
+    }
+    
     return balance(p);
 }
 
@@ -204,47 +220,47 @@ Node * AVLTree :: remove (Node * p, int k) {
 
 int AVLTree :: findKStat (int k) {
     int result = 0;
-
-    if (k < size (root)) {
-        Node * node = root;
-
-        int index = size (root -> left);
-
-        while (index != k) {
-            if (k > index) {
-                node = node -> right;
-                index += 1 + size (node -> left);
-            } else {
-                node = node -> left;
-                index -= 1 + size (node -> right);
-            }
+    
+    Node * node = root;
+    
+    int index = size (root -> left);
+    
+    while (index != k) {
+        if (k > index) {
+            node = node -> right;
+            index += 1 + size (node -> left);
+        } else {
+            node = node -> left;
+            index -= 1 + size (node -> right);
         }
-        result = node -> key;
     }
-
+    
+    result = node -> key;
+    
     return result;
 }
 
 int main () {
-
+    
     int n = 0;
     cin >> n;
-
+    
     int k = 0, stat = 0;
-
+    
     AVLTree tree;
-
+    
     for (int i = 0; i < n; ++i) {
-
+        
         cin >> k >> stat;
-
+        
         if (k > 0) {
             tree.insert(k);
         } else {
             tree.remove(-k);
         }
-
+        
         cout << tree.findKStat (stat) << " ";
     }
     return 0;
 }
+
