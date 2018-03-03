@@ -4,7 +4,6 @@
 #include <math.h>
 #include <stack>
 #include <iomanip>
-#include <algorithm>
 
 using namespace std;
 
@@ -60,12 +59,8 @@ double binSearch(vector<vector<double>> &graph, double maxD) {
     double right = maxD;
     double mid = 0;
 
-//    vector<bool> visited(graph.size(), false);
-
     while (right - left > 0.00000001) {
         mid = (right + left) / 2;
-//        cout << "mid = " <<mid<<endl;
-
         if (isWay(graph, mid)) {
             right = mid;
         } else {
@@ -93,10 +88,6 @@ int main() {
         columns.emplace_back(Column(newx, newy));
     }
 
-//    for (int i = 0; i < columns.size(); ++i) {
-//        cout << columns[i].x << " "<<columns[i].y << endl;
-//    }
-
     // INITIALIZING GRAPH
     vector<vector<double>> graph(n + 2);
     for (int i = 0; i < n + 2; ++i) {
@@ -109,8 +100,6 @@ int main() {
                 double d = dist(columns, i, j) - 2 * r;
                 graph[i][j] = d;
                 graph[j][i] = d;
-
-//                cout << "Dist between " << i << " and " << j << " = "<<d<<endl;
             }
         }
     }
@@ -121,32 +110,18 @@ int main() {
     for (int i = 0; i < n; ++i) {
         graph[leftWallIndex][i] = columns[i].x - xl - r;
         graph[i][leftWallIndex] = columns[i].x - xl - r;
-//
-//        cout << "Dist between " << i << " and left wall = "<<columns[i].x<< " - "<< xl << " - " << r << " = "<< columns[i].x - xl - r<<endl;
 
         graph[i][rightWallIndex] = xr - columns[i].x - r;
         graph[rightWallIndex][i] = xr - columns[i].x - r;
-
-//        cout << "Dist between " << i << " and right wall = "<<xr<< " - "<< columns[i].x << " - " << r << " = "<< xr - columns[i].x - r<<endl;
     }
 
     graph[leftWallIndex][rightWallIndex] = xr - xl;
     graph[rightWallIndex][leftWallIndex] = xr - xl;
 
+    double ans = round(binSearch(graph, xr - xl)*1000);
+
     cout.precision(3);
-    cout << fixed << round(binSearch(graph, xr - xl)) << endl;
-
-//    for (int i = 0; i < columns.size(); ++i) {
-//        cout << columns[i].x << " " << columns[i].y << endl;
-//    }
-//    cout << columns.size() << " " << n << endl;
-
-//    for (int i = 0; i < graph.size(); ++i) {
-//        for (int j = 0; j < graph.size(); ++j) {
-//            cout << graph[i][j] << " ";
-//        }
-//        cout << endl;
-//    }
+    cout << fixed << ans/1000 << endl;
 
     return 0;
 }
